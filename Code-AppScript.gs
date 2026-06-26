@@ -422,7 +422,16 @@ function sheetToArray(sheet) {
     const headers = data[0];
     return data.slice(1).map(row => {
         const obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i]; });
+        headers.forEach((h, i) => {
+            let val = row[i];
+            if (val instanceof Date) {
+                // Time-only values in Sheets use Dec 30, 1899 as date part
+                val = val.getFullYear() <= 1900
+                    ? Utilities.formatDate(val, 'Asia/Jakarta', 'HH:mm')
+                    : Utilities.formatDate(val, 'Asia/Jakarta', 'yyyy-MM-dd');
+            }
+            obj[h] = val;
+        });
         return obj;
     });
 }
