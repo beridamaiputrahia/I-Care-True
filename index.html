@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6B8E6B">
+<meta name="description" content="I Care True - Pusat Informasi Komunitas Rohani Kristen">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="I Care True">
+<title>I Care True</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<style>
+:root{
+  --primary:#6B8E6B;--primary-dark:#4A6B4A;--primary-light:#8BAE8B;
+  --cream:#F7F3E9;--white:#FFFFFF;--brown:#B89B72;--brown-light:#D4B896;
+  --bg:#F7F3E9;--surface:#FFFFFF;--surface-2:#F0EBE0;
+  --text:#2C3E2C;--text-2:#5A7A5A;--text-3:#8A9A8A;
+  --border:#E0D8C8;--nav-bg:rgba(255,255,255,0.95);--input-bg:#FFFFFF;
+  --shadow-sm:0 2px 8px rgba(107,142,107,0.08);
+  --shadow-md:0 4px 20px rgba(107,142,107,0.12);
+  --shadow-lg:0 8px 32px rgba(107,142,107,0.18);
+  --grad-primary:linear-gradient(135deg,#6B8E6B 0%,#4A6B4A 100%);
+  --grad-warm:linear-gradient(135deg,#B89B72 0%,#8A7050 100%);
+  --t:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#131A13;--surface:#1A241A;--surface-2:#1E2A1E;
+  --text:#E0E8E0;--text-2:#A0B8A0;--text-3:#6A806A;
+  --border:#2A3A2A;--nav-bg:rgba(26,36,26,0.95);--input-bg:#1E2A1E;
+  --shadow-md:0 4px 20px rgba(0,0,0,0.25);--brown:#A08860;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:var(--t);overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;}
+
+/* ===== LOADING ===== */
+#loading-screen{position:fixed;inset:0;background:linear-gradient(160deg,#2E4A2E 0%,#4A6B4A 35%,#6B8E6B 65%,#B89B72 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.6s ease,visibility 0.6s ease;}
+#loading-screen.fade-out{opacity:0;visibility:hidden;pointer-events:none;}
+.ls-logo{width:88px;height:88px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;backdrop-filter:blur(12px);animation:lsPulse 2s ease-in-out infinite;border:2px solid rgba(255,255,255,0.2);}
+.ls-logo i{font-size:38px;color:white;}
+.ls-title{color:white;font-size:30px;font-weight:800;letter-spacing:3px;margin-bottom:6px;}
+.ls-sub{color:rgba(255,255,255,0.75);font-size:14px;margin-bottom:36px;letter-spacing:1px;}
+.ls-bar{width:220px;height:4px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden;}
+.ls-bar-fill{height:100%;background:rgba(255,255,255,0.9);border-radius:4px;animation:lsFill 2.2s ease-in-out forwards;}
+@keyframes lsFill{0%{width:0%;}80%{width:100%;}100%{width:100%;}}
+@keyframes lsPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+
+/* ===== BIRTHDAY OVERLAY ===== */
+#birthday-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+#birthday-overlay.show{display:flex;}
+.bd-card{background:white;border-radius:24px;padding:40px 32px;text-align:center;max-width:400px;width:90%;position:relative;z-index:1;animation:bdPop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes bdPop{from{transform:scale(0.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.bd-emoji{font-size:52px;display:block;margin-bottom:14px;animation:bdWave 1.5s ease-in-out infinite;}
+@keyframes bdWave{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+.bd-title{font-size:26px;font-weight:900;color:#6B8E6B;margin-bottom:6px;}
+.bd-name{font-size:19px;font-weight:700;color:#B89B72;margin-bottom:14px;}
+.bd-verse{font-style:italic;color:#555;font-size:14px;line-height:1.7;margin-bottom:4px;}
+.bd-ref{font-weight:700;color:#6B8E6B;font-size:13px;margin-bottom:24px;}
+.confetti-piece{position:fixed;width:10px;height:14px;border-radius:2px;animation:confettiFall linear forwards;pointer-events:none;z-index:9997;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+/* ===== TOAST ===== */
+#toast-container{position:fixed;top:76px;right:18px;z-index:9997;display:flex;flex-direction:column;gap:10px;max-width:340px;}
+.toast-item{background:var(--surface);border-radius:12px;padding:13px 16px;box-shadow:var(--shadow-lg);border-left:4px solid var(--primary);display:flex;align-items:center;gap:12px;animation:toastIn 0.35s ease;font-size:14px;color:var(--text);font-weight:500;}
+.toast-item.success{border-color:#6B8E6B;} .toast-item.error{border-color:#E57373;}
+.toast-item.warning{border-color:#F0B429;} .toast-item.info{border-color:#5B8DB8;}
+.toast-item .ti{font-size:18px;}
+.toast-item.success .ti{color:#6B8E6B;} .toast-item.error .ti{color:#E57373;}
+.toast-item.warning .ti{color:#F0B429;} .toast-item.info .ti{color:#5B8DB8;}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* ===== NOTIFICATION PANEL ===== */
+.notif-wrap{position:relative;}
+#notif-badge{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:#E57373;border-radius:50%;color:white;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;}
+#notif-panel{position:fixed;top:70px;right:14px;width:340px;max-height:500px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);z-index:995;overflow:hidden;display:none;flex-direction:column;}
+#notif-panel.open{display:flex;}
+.np-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.np-hdr-title{font-size:15px;font-weight:700;color:var(--text);}
+.np-clear{font-size:12px;color:var(--primary);cursor:pointer;font-weight:600;background:none;border:none;}
+#notif-list{overflow-y:auto;flex:1;}
+.notif-item{display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:default;transition:var(--t);}
+.notif-item:hover{background:var(--surface-2);}
+.notif-item.unread{background:rgba(107,142,107,0.04);}
+.ni-icon{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.ni-icon.info{background:rgba(91,141,184,0.12);color:#5B8DB8;}
+.ni-icon.success{background:rgba(107,142,107,0.12);color:var(--primary);}
+.ni-icon.warning{background:rgba(240,180,41,0.12);color:#C89A20;}
+.ni-icon.birthday{background:rgba(229,115,115,0.12);color:#E57373;}
+.ni-icon.firman{background:rgba(147,112,175,0.12);color:#9370AF;}
+.ni-title{font-size:13px;font-weight:700;color:var(--text);}
+.ni-body{font-size:12px;color:var(--text-2);margin-top:2px;line-height:1.5;}
+.ni-time{font-size:11px;color:var(--text-3);margin-top:4px;}
+
+/* ===== NAVBAR ===== */
+#navbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--nav-bg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:var(--t);}
+.nb-inner{display:flex;align-items:center;height:64px;max-width:1240px;margin:0 auto;padding:0 20px;gap:12px;}
+.nb-brand{display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;}
+.nb-brand-icon{width:40px;height:40px;background:var(--grad-primary);border-radius:11px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;}
+.nb-brand-text{font-size:19px;font-weight:800;color:var(--primary);letter-spacing:0.3px;}
+.nb-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;list-style:none;margin:0;}
+.nb-links li a{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:var(--text-2);transition:var(--t);cursor:pointer;}
+.nb-links li a:hover,.nb-links li a.active{background:rgba(107,142,107,0.12);color:var(--primary);}
+.nb-links li a.admin-link{color:#9370AF;}
+.nb-links li a.admin-link:hover,.nb-links li a.admin-link.active{background:rgba(147,112,175,0.12);color:#9370AF;}
+.nb-actions{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.btn-icon{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--t);font-size:15px;}
+.btn-icon:hover{background:rgba(107,142,107,0.12);color:var(--primary);border-color:var(--primary);}
+.btn-login-nb{padding:8px 16px;border-radius:10px;background:var(--grad-primary);color:white;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:7px;}
+.btn-login-nb:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(107,142,107,0.35);}
+.nb-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none;}
+.nb-hamburger span{display:block;width:22px;height:2px;background:var(--text);border-radius:2px;transition:var(--t);}
+
+/* ===== MOBILE NAV ===== */
+#mobile-nav{display:none;position:fixed;top:64px;left:0;right:0;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px;z-index:999;}
+#mobile-nav.open{display:block;}
+.mn-link{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;color:var(--text-2);font-weight:500;transition:var(--t);cursor:pointer;font-size:14px;}
+.mn-link:hover,.mn-link.active{background:rgba(107,142,107,0.12);color:var(--primary);}
+
+/* ===== HERO ===== */
+#hero{min-height:100vh;position:relative;display:flex;align-items:center;overflow:hidden;
+  background:radial-gradient(ellipse at 75% 40%,rgba(247,243,233,0.2) 0%,transparent 55%),radial-gradient(ellipse at 25% 70%,rgba(107,142,107,0.3) 0%,transparent 50%),linear-gradient(155deg,#1A2E1A 0%,#2E4A2E 20%,#4A6B4A 42%,#6B8E6B 62%,#B89B72 82%,#D4B896 100%);}
+.hero-deco{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.hero-circle{position:absolute;border-radius:50%;background:rgba(255,255,255,0.04);}
+.hero-c1{width:500px;height:500px;top:-10%;right:-5%;border:1px solid rgba(255,255,255,0.06);}
+.hero-c2{width:280px;height:280px;bottom:5%;left:3%;background:rgba(184,155,114,0.07);}
+.hero-cross-bg{position:absolute;right:8%;top:50%;transform:translateY(-50%);font-size:280px;color:rgba(255,255,255,0.05);line-height:1;}
+.hero-rays{position:absolute;top:0;right:0;width:55%;height:100%;background:linear-gradient(250deg,rgba(212,184,150,0.18) 0%,transparent 60%);}
+.hero-content{position:relative;z-index:1;max-width:680px;padding:40px 40px 40px 60px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.25);padding:6px 14px;border-radius:20px;color:rgba(255,255,255,0.9);font-size:13px;margin-bottom:22px;}
+.hero-title{font-size:clamp(38px,6vw,64px);font-weight:900;color:white;line-height:1.15;margin-bottom:14px;text-shadow:0 2px 24px rgba(0,0,0,0.15);}
+.hero-verse{font-size:clamp(17px,2.5vw,22px);color:rgba(255,255,255,0.88);font-style:italic;line-height:1.7;margin-bottom:10px;}
+.hero-ref{color:rgba(212,184,150,0.9);font-size:15px;font-weight:700;margin-bottom:34px;}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;}
+.btn-hero-p{padding:13px 26px;background:white;color:var(--primary);border:none;border-radius:12px;font-size:14.5px;font-weight:700;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:8px;}
+.btn-hero-p:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.btn-hero-s{padding:13px 26px;background:rgba(255,255,255,0.12);color:white;border:2px solid rgba(255,255,255,0.35);border-radius:12px;font-size:14.5px;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);}
+.btn-hero-s:hover{background:rgba(255,255,255,0.22);transform:translateY(-2px);}
+.hero-scroll{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.6);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:7px;animation:scrollBounce 2.2s ease-in-out infinite;}
+@keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(9px);}}
+
+/* ===== CONTENT ===== */
+#content{padding-top:64px;}
+.page{min-height:calc(100vh - 64px);padding:40px 20px;}
+.page.d-none{display:none!important;}
+.container-max{max-width:1200px;margin:0 auto;}
+.container-md{max-width:960px;margin:0 auto;}
+.container-sm{max-width:760px;margin:0 auto;}
+.page-hdr{text-align:center;margin-bottom:38px;}
+.page-hdr h2{font-size:30px;font-weight:800;color:var(--primary);margin-bottom:8px;}
+.page-hdr-line{width:56px;height:4px;background:var(--grad-primary);border-radius:3px;margin:10px auto;}
+.page-hdr p{color:var(--text-3);font-size:15px;}
+
+/* ===== CARDS ===== */
+.card{background:var(--surface);border-radius:16px;padding:22px;box-shadow:var(--shadow-md);border:1px solid var(--border);transition:var(--t);}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.card-hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.card-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ci-green{background:rgba(107,142,107,0.12);color:var(--primary);}
+.ci-brown{background:rgba(184,155,114,0.12);color:var(--brown);}
+.ci-blue{background:rgba(91,141,184,0.12);color:#5B8DB8;}
+.ci-purple{background:rgba(147,112,175,0.12);color:#9370AF;}
+.card-label{font-size:16px;font-weight:700;color:var(--text);}
+.card-sublabel{font-size:12px;color:var(--text-3);}
+
+/* Stat Card */
+.stat-card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow-md);border:1px solid var(--border);display:flex;align-items:center;gap:16px;transition:var(--t);}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.stat-ico{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.stat-num{font-size:30px;font-weight:800;color:var(--text);line-height:1;}
+.stat-lbl{font-size:12.5px;color:var(--text-3);margin-top:4px;}
+
+/* Verse + Countdown */
+.verse-card{background:var(--grad-primary);border-radius:16px;padding:26px;color:white;position:relative;overflow:hidden;}
+.verse-card::before{content:'\f10d';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;top:8px;right:18px;font-size:70px;opacity:0.08;}
+.verse-text{font-size:17px;font-style:italic;line-height:1.75;margin-bottom:12px;}
+.verse-ref{font-size:13.5px;font-weight:700;opacity:0.85;}
+.countdown-card{background:var(--grad-warm);border-radius:16px;padding:22px;color:white;text-align:center;}
+.cd-title{font-size:13px;font-weight:600;opacity:0.8;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.cd-event{font-size:16px;font-weight:700;margin-bottom:14px;}
+.cd-timer{display:flex;justify-content:center;align-items:center;gap:10px;}
+.cd-unit{text-align:center;}
+.cd-num{font-size:34px;font-weight:800;line-height:1;}
+.cd-lbl{font-size:10px;opacity:0.7;text-transform:uppercase;letter-spacing:1px;}
+.cd-sep{font-size:28px;font-weight:800;opacity:0.5;padding-bottom:12px;}
+
+/* Content Cards */
+.event-card{background:var(--surface);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:var(--t);cursor:pointer;}
+.event-card:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:var(--shadow-md);}
+.ev-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(107,142,107,0.1);color:var(--primary);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:9px;}
+.ev-name{font-size:15.5px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.4;}
+.ev-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--text-3);}
+.ev-meta span{display:flex;align-items:center;gap:4px;}
+.dev-card{background:var(--surface);border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:var(--t);cursor:pointer;}
+.dev-card:hover{transform:translateY(-2px);border-color:var(--brown);box-shadow:var(--shadow-md);}
+.dev-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(184,155,114,0.1);color:var(--brown);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:9px;}
+.dev-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:9px;line-height:1.4;}
+.dev-preview{font-size:13.5px;color:var(--text-2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.dev-footer{display:flex;align-items:center;justify-content:space-between;margin-top:13px;padding-top:13px;border-top:1px solid var(--border);font-size:12.5px;color:var(--text-3);}
+.pray-card{background:var(--surface);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:var(--t);border-left:4px solid var(--primary);}
+.pray-name{font-weight:700;color:var(--text);margin-bottom:6px;font-size:14.5px;}
+.pray-text{font-size:13.5px;color:var(--text-2);line-height:1.65;}
+.pray-meta{font-size:12px;color:var(--text-3);margin-top:8px;}
+.pray-actions{display:flex;gap:8px;margin-top:12px;}
+.ann-card{background:var(--surface);border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border);border-top:4px solid var(--brown);transition:var(--t);}
+.ann-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.ann-title{font-size:16.5px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.ann-body{font-size:13.5px;color:var(--text-2);line-height:1.7;}
+.ann-date{font-size:12px;color:var(--text-3);margin-top:10px;}
+
+/* ===== MEMBER CARDS ===== */
+.member-card{background:var(--surface);border-radius:16px;padding:20px;box-shadow:var(--shadow-md);border:1px solid var(--border);text-align:center;transition:var(--t);}
+.member-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.m-avatar-img{width:72px;height:72px;border-radius:50%;margin:0 auto 12px;object-fit:cover;border:3px solid rgba(107,142,107,0.2);}
+.m-avatar-ph{width:72px;height:72px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:26px;color:white;margin:0 auto 12px;border:3px solid rgba(107,142,107,0.2);}
+.m-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.m-role-badge{font-size:11.5px;margin-bottom:12px;display:inline-block;}
+.m-info{text-align:left;border-top:1px solid var(--border);padding-top:12px;}
+.m-info-row{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--text-2);margin-bottom:6px;}
+.m-info-row i{color:var(--primary);width:15px;text-align:center;margin-top:2px;flex-shrink:0;}
+
+/* ===== ADMIN PANEL ===== */
+.admin-tabs{display:flex;gap:4px;background:var(--surface-2);border-radius:12px;padding:4px;margin-bottom:24px;overflow-x:auto;flex-shrink:0;}
+.admin-tab{padding:9px 15px;border:none;background:transparent;border-radius:9px;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;white-space:nowrap;transition:var(--t);display:flex;align-items:center;gap:6px;}
+.admin-tab.active{background:var(--primary);color:white;}
+.admin-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+.admin-table{width:100%;border-collapse:collapse;font-size:13px;}
+.admin-table th{background:var(--grad-primary);color:white;padding:11px 14px;text-align:left;font-weight:700;white-space:nowrap;}
+.admin-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.admin-table tr:last-child td{border-bottom:none;}
+.admin-table tr:hover td{background:rgba(107,142,107,0.04);}
+.tbl-actions{display:flex;gap:6px;}
+.admin-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+
+/* ===== FIRMAN CARD ===== */
+.firman-card{background:linear-gradient(135deg,rgba(147,112,175,0.06),rgba(107,142,107,0.06));border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;transition:var(--t);}
+.firman-card:hover{box-shadow:var(--shadow-md);}
+.fp-pill{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.fp-pending{background:rgba(240,180,41,0.15);color:#C89A20;}
+.fp-accepted{background:rgba(107,142,107,0.15);color:var(--primary);}
+.fp-declined{background:rgba(229,115,115,0.15);color:#E57373;}
+
+/* ===== BUTTONS ===== */
+.btn-p{padding:9px 18px;background:var(--grad-primary);color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px;}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(107,142,107,0.35);}
+.btn-s{padding:9px 18px;background:transparent;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px;}
+.btn-s:hover{background:rgba(107,142,107,0.1);}
+.btn-w{padding:9px 18px;background:var(--grad-warm);color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px;}
+.btn-w:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(184,155,114,0.35);}
+.btn-d{padding:7px 14px;background:transparent;color:#E57373;border:1.5px solid #E57373;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--t);}
+.btn-d:hover{background:rgba(229,115,115,0.1);}
+.btn-e{padding:7px 14px;background:transparent;color:var(--brown);border:1.5px solid var(--brown);border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;transition:var(--t);}
+.btn-e:hover{background:rgba(184,155,114,0.1);}
+.btn-wa{padding:9px 18px;background:#25D366;color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px;}
+.btn-wa:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,211,102,0.35);}
+.btn-purple{padding:9px 18px;background:linear-gradient(135deg,#9370AF,#7A5899);color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:var(--t);display:inline-flex;align-items:center;gap:7px;}
+.btn-purple:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(147,112,175,0.35);}
+.w-100{width:100%;}
+
+/* ===== SEARCH + TOOLBAR ===== */
+.search-wrap{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 16px;transition:var(--t);}
+.search-wrap:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(107,142,107,0.15);}
+.search-wrap input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(--text);}
+.search-wrap i{color:var(--text-3);}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.view-toggle{display:flex;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.vt-btn{padding:8px 13px;border:none;background:transparent;color:var(--text-3);cursor:pointer;transition:var(--t);}
+.vt-btn.active{background:var(--primary);color:white;}
+
+/* ===== FORMS ===== */
+.fg{margin-bottom:18px;}
+.flabel{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:6px;}
+.finput{width:100%;padding:11px 15px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;transition:var(--t);outline:none;font-family:inherit;}
+.finput:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(107,142,107,0.15);}
+.finput::placeholder{color:var(--text-3);}
+textarea.finput{min-height:100px;resize:vertical;}
+select.finput{cursor:pointer;}
+.pw-wrap{position:relative;}
+.pw-wrap .finput{padding-right:44px;}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);cursor:pointer;font-size:15px;}
+
+/* ===== MODAL ===== */
+.modal-content{border:none!important;border-radius:20px!important;background:var(--surface)!important;box-shadow:0 20px 60px rgba(0,0,0,0.18)!important;}
+.modal-header{border-bottom:1px solid var(--border)!important;padding:20px 24px!important;}
+.modal-title{font-size:17.5px;font-weight:700;color:var(--text);}
+.modal-body{padding:22px 24px!important;}
+.modal-footer{border-top:1px solid var(--border)!important;padding:15px 24px!important;}
+[data-theme="dark"] .btn-close{filter:invert(1);}
+
+/* ===== PROFILE ===== */
+.profile-card{background:var(--surface);border-radius:20px;padding:30px;box-shadow:var(--shadow-md);border:1px solid var(--border);text-align:center;}
+.p-avatar{width:88px;height:88px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:38px;color:white;margin:0 auto 16px;}
+.p-avatar img{width:88px;height:88px;border-radius:50%;object-fit:cover;}
+.p-name{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.p-email{color:var(--text-3);font-size:13.5px;margin-bottom:18px;}
+.p-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(107,142,107,0.12);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px;}
+.p-info-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);}
+.p-info-item:last-child{border-bottom:none;}
+.p-info-item i{color:var(--primary);width:20px;text-align:center;}
+.qr-wrap{background:white;padding:18px;border-radius:14px;display:inline-block;box-shadow:var(--shadow-md);}
+
+/* ===== FABs ===== */
+#fabs{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:12px;z-index:900;}
+.fab-wrap{position:relative;display:flex;justify-content:flex-end;align-items:center;}
+.fab{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;transition:var(--t);box-shadow:0 4px 16px rgba(0,0,0,0.15);}
+.fab:hover{transform:scale(1.12);}
+.fab-green{background:var(--grad-primary);color:white;}
+.fab-wa-c{background:#25D366;color:white;}
+.fab-tip{position:absolute;right:64px;background:var(--surface);color:var(--text);padding:5px 11px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:var(--t);}
+.fab-wrap:hover .fab-tip{opacity:1;}
+
+/* ===== SKELETON ===== */
+.skel{background:linear-gradient(90deg,var(--border) 25%,var(--surface-2) 50%,var(--border) 75%);background-size:200% 100%;animation:skelShimmer 1.5s infinite;border-radius:8px;}
+@keyframes skelShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skel-card{background:var(--surface);border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);border:1px solid var(--border);}
+.skel-line{height:13px;margin-bottom:10px;}
+.sl-s{width:35%;} .sl-m{width:65%;} .sl-f{width:100%;} .sl-t{height:18px;width:55%;margin-bottom:15px;}
+
+/* ===== SCROLL ANIMATION ===== */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ===== LIST ITEM ===== */
+.list-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:var(--t);margin-bottom:8px;cursor:pointer;}
+.list-item:hover{border-color:var(--primary);transform:translateX(4px);}
+.li-num{width:34px;height:34px;border-radius:50%;background:rgba(107,142,107,0.1);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+
+/* ===== BADGES ===== */
+.badge-g{background:rgba(107,142,107,0.12);color:var(--primary);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-b{background:rgba(184,155,114,0.12);color:var(--brown);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-purple{background:rgba(147,112,175,0.12);color:#9370AF;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-admin{background:linear-gradient(135deg,#9370AF,#7A5899);color:white;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-member{background:rgba(107,142,107,0.12);color:var(--primary);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-answered{background:rgba(91,184,91,0.12);color:#3D8B3D;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* ===== FOOTER + MISC ===== */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--text-3);font-size:13.5px;}
+.ft-logo{font-size:17px;font-weight:800;color:var(--primary);margin-bottom:6px;}
+.empty{text-align:center;padding:56px 20px;color:var(--text-3);}
+.empty i{font-size:46px;display:block;margin-bottom:14px;opacity:0.35;}
+.empty p{font-size:15px;}
+.auth-msg{text-align:center;padding:48px 20px;color:var(--text-3);}
+.auth-msg i{font-size:44px;display:block;margin-bottom:14px;color:var(--primary);opacity:0.5;}
+.admin-only{display:none;}
+
+/* ===== FILE CHIP & PHOTO PREVIEW ===== */
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(107,142,107,0.1);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12.5px;color:var(--text-2);}
+.file-chip i{color:var(--primary);}
+.photo-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid rgba(107,142,107,0.25);display:block;margin:0 auto;}
+.file-download-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(91,141,184,0.1);color:#5B8DB8;border:1px solid rgba(91,141,184,0.3);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;margin-top:8px;}
+.file-download-btn:hover{background:rgba(91,141,184,0.2);color:#5B8DB8;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .nb-links{display:none!important;}
+  .nb-hamburger{display:flex!important;}
+  .hero-content{padding:24px 20px 24px 24px;}
+  .hero-cross-bg{display:none;}
+  .page{padding:24px 14px;}
+  #fabs{bottom:14px;right:14px;}
+  .fab{width:46px;height:46px;font-size:18px;}
+  #toast-container{right:10px;left:10px;max-width:none;}
+  #notif-panel{right:10px;left:10px;width:auto;}
+  .cd-num{font-size:26px;}
+}
+@media(max-width:480px){
+  .hero-btns{flex-direction:column;}
+  .btn-hero-p,.btn-hero-s{width:100%;justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOADING ===== -->
+<div id="loading-screen">
+  <div class="ls-logo"><i class="fas fa-cross"></i></div>
+  <div class="ls-title">I CARE TRUE</div>
+  <div class="ls-sub">Pusat Informasi Komunitas Rohani</div>
+  <div class="ls-bar"><div class="ls-bar-fill"></div></div>
+</div>
+
+<!-- ===== BIRTHDAY OVERLAY ===== -->
+<div id="birthday-overlay">
+  <div class="bd-card" id="bd-card-inner"></div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toast-container"></div>
+
+<!-- ===== NOTIFICATION PANEL ===== -->
+<div id="notif-panel">
+  <div class="np-hdr">
+    <span class="np-hdr-title"><i class="fas fa-bell me-2" style="color:var(--primary);"></i>Notifikasi</span>
+    <button class="np-clear" onclick="NOTIF.clearAll()">Hapus semua</button>
+  </div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav id="navbar">
+  <div class="nb-inner">
+    <div class="nb-brand" onclick="navigate('home')">
+      <div class="nb-brand-icon"><i class="fas fa-cross"></i></div>
+      <span class="nb-brand-text">I Care True</span>
+    </div>
+    <ul class="nb-links">
+      <li><a onclick="navigate('home')" data-page="home" class="nav-link active"><i class="fas fa-home"></i> Beranda</a></li>
+      <li><a onclick="navigate('jadwal')" data-page="jadwal" class="nav-link"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
+      <li><a onclick="navigate('renungan')" data-page="renungan" class="nav-link"><i class="fas fa-book-open"></i> Renungan</a></li>
+      <li><a onclick="navigate('doa')" data-page="doa" class="nav-link"><i class="fas fa-praying-hands"></i> Doa</a></li>
+      <li><a onclick="navigate('pengumuman')" data-page="pengumuman" class="nav-link"><i class="fas fa-bullhorn"></i> Pengumuman</a></li>
+      <li><a onclick="navigate('anggota')" data-page="anggota" class="nav-link"><i class="fas fa-users"></i> Anggota</a></li>
+      <li><a onclick="navigate('profil')" data-page="profil" class="nav-link"><i class="fas fa-user-circle"></i> Profil</a></li>
+      <li id="admin-nav-item" style="display:none;"><a onclick="navigate('admin')" data-page="admin" class="nav-link admin-link"><i class="fas fa-shield-alt"></i> Admin</a></li>
+    </ul>
+    <div class="nb-actions">
+      <div class="notif-wrap">
+        <button class="btn-icon" onclick="toggleNotifPanel()" title="Notifikasi"><i class="fas fa-bell"></i></button>
+        <div id="notif-badge"></div>
+      </div>
+      <button class="btn-icon" id="dm-btn" onclick="toggleDarkMode()" title="Mode Gelap"><i class="fas fa-moon" id="dm-icon"></i></button>
+      <button class="btn-icon" id="pwa-btn" onclick="installPWA()" title="Pasang Aplikasi" style="display:none;"><i class="fas fa-download"></i></button>
+      <button class="btn-login-nb" id="auth-btn" onclick="showAuth('login')"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+    </div>
+    <button class="nb-hamburger" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- ===== MOBILE NAV ===== -->
+<div id="mobile-nav">
+  <div class="mn-link nav-link active" data-page="home" onclick="navigate('home');closeMobileNav()"><i class="fas fa-home"></i> Beranda</div>
+  <div class="mn-link nav-link" data-page="jadwal" onclick="navigate('jadwal');closeMobileNav()"><i class="fas fa-calendar-alt"></i> Jadwal</div>
+  <div class="mn-link nav-link" data-page="renungan" onclick="navigate('renungan');closeMobileNav()"><i class="fas fa-book-open"></i> Renungan</div>
+  <div class="mn-link nav-link" data-page="doa" onclick="navigate('doa');closeMobileNav()"><i class="fas fa-praying-hands"></i> Doa</div>
+  <div class="mn-link nav-link" data-page="pengumuman" onclick="navigate('pengumuman');closeMobileNav()"><i class="fas fa-bullhorn"></i> Pengumuman</div>
+  <div class="mn-link nav-link" data-page="anggota" onclick="navigate('anggota');closeMobileNav()"><i class="fas fa-users"></i> Anggota</div>
+  <div class="mn-link nav-link" data-page="profil" onclick="navigate('profil');closeMobileNav()"><i class="fas fa-user-circle"></i> Profil</div>
+  <div class="mn-link nav-link" data-page="admin" id="admin-mob-item" style="display:none;" onclick="navigate('admin');closeMobileNav()"><i class="fas fa-shield-alt" style="color:#9370AF;"></i> <span style="color:#9370AF;">Panel Admin</span></div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div id="content">
+
+<!-- HOME -->
+<div id="page-home">
+  <section id="hero">
+    <div class="hero-deco">
+      <div class="hero-circle hero-c1"></div>
+      <div class="hero-circle hero-c2"></div>
+      <div class="hero-cross-bg"><i class="fas fa-cross"></i></div>
+      <div class="hero-rays"></div>
+    </div>
+    <div style="max-width:1240px;margin:0 auto;padding:0 20px;width:100%;">
+      <div class="hero-content">
+        <div class="hero-badge"><i class="fas fa-dove"></i> Komunitas Rohani Kristen</div>
+        <h1 class="hero-title">I Care True</h1>
+        <p class="hero-verse">"Firman-Mu itu pelita bagi kakiku<br>dan terang bagi jalanku."</p>
+        <p class="hero-ref">— Mazmur 119 : 105</p>
+        <div class="hero-btns">
+          <button class="btn-hero-p" onclick="scrollToDashboard()"><i class="fas fa-compass"></i> Lihat Dashboard</button>
+          <button class="btn-hero-s" onclick="navigate('jadwal')"><i class="fas fa-calendar-alt"></i> Jadwal I Care</button>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll"><span>Gulir ke bawah</span><i class="fas fa-chevron-down"></i></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="page" style="background:var(--bg);">
+    <div class="container-max">
+      <div class="row g-4 mb-4">
+        <div class="col-12 col-md-4">
+          <div class="countdown-card reveal">
+            <div class="cd-title">Kegiatan Berikutnya</div>
+            <div class="cd-event" id="cd-event">Memuat...</div>
+            <div class="cd-timer">
+              <div class="cd-unit"><div class="cd-num" id="cd-d">00</div><div class="cd-lbl">Hari</div></div>
+              <div class="cd-sep">:</div>
+              <div class="cd-unit"><div class="cd-num" id="cd-h">00</div><div class="cd-lbl">Jam</div></div>
+              <div class="cd-sep">:</div>
+              <div class="cd-unit"><div class="cd-num" id="cd-m">00</div><div class="cd-lbl">Menit</div></div>
+              <div class="cd-sep">:</div>
+              <div class="cd-unit"><div class="cd-num" id="cd-s">00</div><div class="cd-lbl">Detik</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-8">
+          <div class="verse-card reveal" style="height:100%;min-height:130px;">
+            <div style="font-size:12px;font-weight:700;opacity:0.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;"><i class="fas fa-sun me-2"></i>Ayat Hari Ini</div>
+            <div class="verse-text" id="verse-text">Memuat ayat hari ini...</div>
+            <div class="verse-ref" id="verse-ref"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="stat-card reveal"><div class="stat-ico ci-green"><i class="fas fa-users"></i></div><div><div class="stat-num" id="stat-members">—</div><div class="stat-lbl">Total Anggota</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card reveal" style="transition-delay:0.1s;"><div class="stat-ico ci-blue"><i class="fas fa-calendar-check"></i></div><div><div class="stat-num" id="stat-events">—</div><div class="stat-lbl">Total Kegiatan</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card reveal" style="transition-delay:0.2s;"><div class="stat-ico ci-brown"><i class="fas fa-book-open"></i></div><div><div class="stat-num" id="stat-devotions">—</div><div class="stat-lbl">Total Renungan</div></div></div></div>
+        <div class="col-6 col-md-3"><div class="stat-card reveal" style="transition-delay:0.3s;"><div class="stat-ico ci-purple"><i class="fas fa-praying-hands"></i></div><div><div class="stat-num" id="stat-prayers">—</div><div class="stat-lbl">Total Doa</div></div></div></div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6">
+          <div class="card reveal">
+            <div class="card-hdr"><div class="card-ico ci-blue"><i class="fas fa-calendar-alt"></i></div><div><div class="card-label">Jadwal Terdekat</div><div class="card-sublabel">Kegiatan mendatang</div></div><button class="btn-s ms-auto" onclick="navigate('jadwal')" style="font-size:12px;padding:6px 12px;">Semua <i class="fas fa-arrow-right"></i></button></div>
+            <div id="dash-events"><div class="skel-card mb-2"><div class="skel skel-line sl-t"></div><div class="skel skel-line sl-m"></div></div><div class="skel-card"><div class="skel skel-line sl-t"></div><div class="skel skel-line sl-m"></div></div></div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="card reveal" style="transition-delay:0.1s;">
+            <div class="card-hdr"><div class="card-ico ci-brown"><i class="fas fa-bullhorn"></i></div><div><div class="card-label">Pengumuman Terbaru</div><div class="card-sublabel">Info komunitas</div></div><button class="btn-s ms-auto" onclick="navigate('pengumuman')" style="font-size:12px;padding:6px 12px;">Semua <i class="fas fa-arrow-right"></i></button></div>
+            <div id="dash-ann"><div class="skel-card"><div class="skel skel-line sl-t"></div><div class="skel skel-line sl-f"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6">
+          <div class="card reveal">
+            <div class="card-hdr"><div class="card-ico ci-brown"><i class="fas fa-book-open"></i></div><div><div class="card-label">Renungan Terbaru</div><div class="card-sublabel">Penguatan iman</div></div><button class="btn-s ms-auto" onclick="navigate('renungan')" style="font-size:12px;padding:6px 12px;">Semua <i class="fas fa-arrow-right"></i></button></div>
+            <div id="dash-devot"><div class="skel-card"><div class="skel skel-line sl-t"></div><div class="skel skel-line sl-f"></div></div></div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="card reveal" style="transition-delay:0.1s;">
+            <div class="card-hdr"><div class="card-ico ci-green"><i class="fas fa-chart-bar"></i></div><div><div class="card-label">Statistik</div><div class="card-sublabel">Ringkasan komunitas</div></div></div>
+            <div style="position:relative;height:220px;"><canvas id="stats-chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end page-home -->
+
+<!-- JADWAL -->
+<div id="page-jadwal" class="page d-none">
+  <div class="container-max">
+    <div class="page-hdr"><h2><i class="fas fa-calendar-alt me-2"></i>Jadwal I Care</h2><div class="page-hdr-line"></div><p>Daftar kegiatan komunitas rohani</p></div>
+    <div class="toolbar">
+      <div class="search-wrap flex-grow-1"><i class="fas fa-search"></i><input type="text" id="search-jadwal" placeholder="Cari kegiatan, lokasi, PIC..." oninput="filterEvents(this.value)"></div>
+      <div class="view-toggle"><button class="vt-btn active" id="vt-card" onclick="setView('card')"><i class="fas fa-th-large"></i></button><button class="vt-btn" id="vt-list" onclick="setView('list')"><i class="fas fa-list"></i></button></div>
+      <button class="btn-s" onclick="exportPDF('jadwal')"><i class="fas fa-file-pdf"></i> PDF</button>
+      <button class="btn-w" onclick="exportExcel('jadwal')"><i class="fas fa-file-excel"></i> Excel</button>
+    </div>
+    <div id="events-container" class="row g-3"></div>
+  </div>
+</div>
+
+<!-- RENUNGAN -->
+<div id="page-renungan" class="page d-none">
+  <div class="container-max">
+    <div class="page-hdr"><h2><i class="fas fa-book-open me-2"></i>Renungan</h2><div class="page-hdr-line"></div><p>Penguatan iman untuk perjalanan harianmu</p></div>
+    <div class="toolbar">
+      <div class="search-wrap flex-grow-1"><i class="fas fa-search"></i><input type="text" id="search-renungan" placeholder="Cari judul, penulis, ayat..." oninput="filterDevotions(this.value)"></div>
+      <button class="btn-s" onclick="exportPDF('renungan')"><i class="fas fa-file-pdf"></i> PDF</button>
+      <button class="btn-w" onclick="exportExcel('renungan')"><i class="fas fa-file-excel"></i> Excel</button>
+    </div>
+    <div id="devotions-container" class="row g-4"></div>
+  </div>
+</div>
+
+<!-- DOA -->
+<div id="page-doa" class="page d-none">
+  <div class="container-md">
+    <div class="page-hdr"><h2><i class="fas fa-praying-hands me-2"></i>Permohonan Doa</h2><div class="page-hdr-line"></div><p id="doa-subtitle">Kirimkan pokok doa Anda kepada admin</p></div>
+    <div id="doa-auth-section" class="mb-4"></div>
+    <div id="my-prayers-container"></div>
+  </div>
+</div>
+
+<!-- PENGUMUMAN -->
+<div id="page-pengumuman" class="page d-none">
+  <div class="container-md">
+    <div class="page-hdr"><h2><i class="fas fa-bullhorn me-2"></i>Pengumuman</h2><div class="page-hdr-line"></div><p>Informasi terkini dari komunitas</p></div>
+    <div class="toolbar">
+      <div class="search-wrap flex-grow-1"><i class="fas fa-search"></i><input type="text" id="search-pengumuman" placeholder="Cari pengumuman..." oninput="filterAnnouncements(this.value)"></div>
+      <button class="btn-s" onclick="exportPDF('pengumuman')"><i class="fas fa-file-pdf"></i> PDF</button>
+      <button class="btn-w" onclick="exportExcel('pengumuman')"><i class="fas fa-file-excel"></i> Excel</button>
+    </div>
+    <div id="announcements-container"></div>
+  </div>
+</div>
+
+<!-- ANGGOTA -->
+<div id="page-anggota" class="page d-none">
+  <div class="container-max">
+    <div class="page-hdr"><h2><i class="fas fa-users me-2"></i>Daftar Anggota</h2><div class="page-hdr-line"></div><p>Keluarga I Care True</p></div>
+    <div class="search-wrap mb-4"><i class="fas fa-search"></i><input type="text" id="search-anggota" placeholder="Cari nama anggota..." oninput="filterMembers(this.value)"></div>
+    <div id="members-container" class="row g-4"></div>
+  </div>
+</div>
+
+<!-- PROFIL -->
+<div id="page-profil" class="page d-none">
+  <div class="container-sm"><div class="page-hdr"><h2><i class="fas fa-user-circle me-2"></i>Profil Anggota</h2><div class="page-hdr-line"></div><p>Informasi akun Anda</p></div><div id="profile-container"></div></div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="page-admin" class="page d-none">
+  <div class="container-max">
+    <div class="page-hdr"><h2><i class="fas fa-shield-alt me-2" style="color:#9370AF;"></i>Panel Admin</h2><div class="page-hdr-line" style="background:linear-gradient(135deg,#9370AF,#7A5899);"></div><p>Kelola seluruh data I Care True</p></div>
+    <div class="admin-tabs" id="admin-tabs">
+      <button class="admin-tab active" onclick="adminTab('events')"><i class="fas fa-calendar-alt"></i> Kegiatan</button>
+      <button class="admin-tab" onclick="adminTab('devotions')"><i class="fas fa-book-open"></i> Renungan</button>
+      <button class="admin-tab" onclick="adminTab('announcements')"><i class="fas fa-bullhorn"></i> Pengumuman</button>
+      <button class="admin-tab" onclick="adminTab('users')"><i class="fas fa-users"></i> Anggota</button>
+      <button class="admin-tab" onclick="adminTab('prayers')"><i class="fas fa-praying-hands"></i> Doa</button>
+      <button class="admin-tab" onclick="adminTab('firman')"><i class="fas fa-microphone"></i> Firman</button>
+    </div>
+    <div id="admin-content"></div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<footer id="footer">
+  <div class="ft-logo"><i class="fas fa-cross me-2"></i>I Care True</div>
+  <p>Pusat Informasi Komunitas Rohani Kristen</p>
+  <p style="margin-top:8px;font-size:12px;opacity:0.7;">"Firman-Mu itu pelita bagi kakiku dan terang bagi jalanku." — Mzm 119:105</p>
+  <p style="margin-top:10px;font-size:11px;opacity:0.5;">&copy; 2026 I Care True. Dibuat dengan <i class="fas fa-heart" style="color:#E57373;"></i> untuk kemuliaan Tuhan.</p>
+</footer>
+
+<!-- FABs -->
+<div id="fabs">
+  <div class="fab-wrap" id="pwa-fab" style="display:none;"><span class="fab-tip">Pasang Aplikasi</span><button class="fab" style="background:#5B8DB8;color:white;" onclick="installPWA()"><i class="fas fa-mobile-alt"></i></button></div>
+  <div class="fab-wrap"><span class="fab-tip">Bagikan via WhatsApp</span><button class="fab fab-wa-c" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i></button></div>
+  <div class="fab-wrap"><span class="fab-tip">Kirim Pokok Doa</span><button class="fab fab-green" onclick="navigate('doa')"><i class="fas fa-praying-hands"></i></button></div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- LOGIN -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="fas fa-sign-in-alt me-2" style="color:var(--primary);"></i>Masuk ke I Care True</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="flabel">Email</label><input type="email" class="finput" id="l-email" placeholder="email@example.com"></div>
+      <div class="fg"><label class="flabel">Password</label><div class="pw-wrap"><input type="password" class="finput" id="l-pass" placeholder="Password" onkeypress="if(event.key==='Enter')doLogin()"><button class="pw-eye" onclick="togglePw('l-pass','l-eye')"><i class="fas fa-eye" id="l-eye"></i></button></div></div>
+      <button class="btn-p w-100" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+      <div style="text-align:center;margin-top:16px;font-size:13.5px;color:var(--text-3);">Belum punya akun? <a onclick="showAuth('register')" style="color:var(--primary);font-weight:600;cursor:pointer;">Daftar sekarang</a></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- REGISTER -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="fas fa-user-plus me-2" style="color:var(--primary);"></i>Daftar Anggota Baru</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="flabel">Nama Lengkap</label><input type="text" class="finput" id="r-nama" placeholder="Nama lengkap Anda"></div>
+      <div class="fg"><label class="flabel">Email</label><input type="email" class="finput" id="r-email" placeholder="email@example.com"></div>
+      <div class="fg"><label class="flabel">Nomor WhatsApp</label><input type="tel" class="finput" id="r-wa" placeholder="08xxxxxxxxxx"></div>
+      <div class="fg"><label class="flabel">Tanggal Lahir <span style="color:var(--text-3);font-weight:400;">(untuk notifikasi ulang tahun)</span></label><input type="date" class="finput" id="r-birthday"></div>
+      <div class="fg"><label class="flabel">Alamat</label><input type="text" class="finput" id="r-alamat" placeholder="Alamat tempat tinggal"></div>
+      <div class="fg">
+        <label class="flabel">Foto Profil <span style="color:var(--text-3);font-weight:400;">(opsional, PNG/JPEG)</span></label>
+        <input type="file" class="finput" id="r-foto" accept="image/png,image/jpeg" style="padding:8px 12px;" onchange="previewRegisterPhoto(this)">
+        <div id="r-foto-preview" style="margin-top:8px;text-align:center;"></div>
+      </div>
+      <div class="fg"><label class="flabel">Password</label><div class="pw-wrap"><input type="password" class="finput" id="r-pass" placeholder="Minimal 6 karakter"><button class="pw-eye" onclick="togglePw('r-pass','r-eye')"><i class="fas fa-eye" id="r-eye"></i></button></div></div>
+      <button class="btn-p w-100" onclick="doRegister()"><i class="fas fa-user-plus"></i> Daftar Sekarang</button>
+      <div style="text-align:center;margin-top:16px;font-size:13.5px;color:var(--text-3);">Sudah punya akun? <a onclick="showAuth('login')" style="color:var(--primary);font-weight:600;cursor:pointer;">Masuk</a></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- PRAYER (MY OWN) -->
+<div class="modal fade" id="prayModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="pray-modal-title"><i class="fas fa-praying-hands me-2" style="color:var(--primary);"></i>Tambah Pokok Doa</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pray-id">
+      <div class="fg"><label class="flabel">Pokok Doa</label><textarea class="finput" id="pray-text" placeholder="Tuliskan pokok doa Anda..." style="min-height:130px;"></textarea></div>
+      <p style="font-size:12.5px;color:var(--text-3);margin-bottom:16px;"><i class="fas fa-lock me-1"></i>Pokok doa hanya diterima dan dilihat oleh admin.</p>
+      <button class="btn-p w-100" onclick="savePrayer()"><i class="fas fa-paper-plane"></i> Kirim kepada Admin</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- DEVOTION DETAIL -->
+<div class="modal fade" id="devotModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="devot-title">Renungan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="devot-body" style="max-height:70vh;overflow-y:auto;"></div>
+    <div class="modal-footer"><button class="btn-wa" onclick="shareDevotionWA()"><i class="fab fa-whatsapp"></i> Bagikan WA</button><button class="btn-s" data-bs-dismiss="modal">Tutup</button></div>
+  </div></div>
+</div>
+
+<!-- ADMIN: ADD/EDIT EVENT -->
+<div class="modal fade" id="modalEvent" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="ev-modal-title"><i class="fas fa-calendar-alt me-2" style="color:var(--primary);"></i>Tambah Kegiatan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="ev-id">
+      <input type="hidden" id="ev-file-url">
+      <input type="hidden" id="ev-file-name">
+      <div class="fg"><label class="flabel">Nama Kegiatan</label><input type="text" class="finput" id="ev-nama" placeholder="Nama kegiatan"></div>
+      <div class="row g-3">
+        <div class="col-7"><div class="fg"><label class="flabel">Tanggal</label><input type="date" class="finput" id="ev-tanggal"></div></div>
+        <div class="col-5"><div class="fg"><label class="flabel">Jam</label><input type="time" class="finput" id="ev-jam"></div></div>
+      </div>
+      <div class="fg"><label class="flabel">Lokasi</label><input type="text" class="finput" id="ev-lokasi" placeholder="Lokasi kegiatan"></div>
+      <div class="fg"><label class="flabel">PIC (Penanggung Jawab)</label><input type="text" class="finput" id="ev-pic" placeholder="Nama PIC"></div>
+      <div class="fg">
+        <label class="flabel">Lampiran <span style="color:var(--text-3);font-weight:400;">(PDF/Video/Gambar — opsional)</span></label>
+        <input type="file" class="finput" id="ev-file" accept=".pdf,.mp4,.mov,.avi,.jpg,.jpeg,.png" style="padding:8px 12px;">
+        <div id="ev-file-preview" style="margin-top:8px;"></div>
+      </div>
+      <button class="btn-p w-100" onclick="saveEvent()"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ADMIN: ADD/EDIT DEVOTION -->
+<div class="modal fade" id="modalDevotion" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="dv-modal-title"><i class="fas fa-book-open me-2" style="color:var(--brown);"></i>Tambah Renungan</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="dv-id">
+      <div class="fg"><label class="flabel">Judul Renungan</label><input type="text" class="finput" id="dv-judul" placeholder="Judul renungan"></div>
+      <div class="fg"><label class="flabel">Isi Renungan</label><textarea class="finput" id="dv-isi" placeholder="Tulis isi renungan..." style="min-height:150px;"></textarea></div>
+      <div class="row g-3">
+        <div class="col-6"><div class="fg"><label class="flabel">Ayat Dasar</label><input type="text" class="finput" id="dv-ayat" placeholder="Yohanes 3:16"></div></div>
+        <div class="col-6"><div class="fg"><label class="flabel">Penulis</label><input type="text" class="finput" id="dv-penulis" placeholder="Nama penulis"></div></div>
+      </div>
+      <button class="btn-p w-100" onclick="saveDevotion()"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ADMIN: ADD/EDIT ANNOUNCEMENT -->
+<div class="modal fade" id="modalAnn" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="an-modal-title"><i class="fas fa-bullhorn me-2" style="color:var(--brown);"></i>Tambah Pengumuman</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="an-id">
+      <input type="hidden" id="an-file-url">
+      <input type="hidden" id="an-file-name">
+      <div class="fg"><label class="flabel">Judul Pengumuman</label><input type="text" class="finput" id="an-judul" placeholder="Judul pengumuman"></div>
+      <div class="fg"><label class="flabel">Isi Pengumuman</label><textarea class="finput" id="an-isi" placeholder="Isi pengumuman..." style="min-height:120px;"></textarea></div>
+      <div class="fg">
+        <label class="flabel">Lampiran <span style="color:var(--text-3);font-weight:400;">(PDF/Video/Gambar — opsional)</span></label>
+        <input type="file" class="finput" id="an-file" accept=".pdf,.mp4,.mov,.avi,.jpg,.jpeg,.png" style="padding:8px 12px;">
+        <div id="an-file-preview" style="margin-top:8px;"></div>
+      </div>
+      <button class="btn-p w-100" onclick="saveAnnouncement()"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ADMIN: ADD / EDIT USER -->
+<div class="modal fade" id="modalUser" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="usr-modal-title"><i class="fas fa-user-cog me-2" style="color:#9370AF;"></i>Edit Anggota</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+      <input type="hidden" id="usr-id">
+      <input type="hidden" id="usr-foto">
+      <div id="usr-foto-preview" style="text-align:center;margin-bottom:14px;"></div>
+      <div class="fg">
+        <label class="flabel">Foto Profil <span style="color:var(--text-3);font-weight:400;">(PNG/JPEG)</span></label>
+        <input type="file" class="finput" id="usr-foto-file" accept="image/png,image/jpeg" style="padding:8px 12px;" onchange="previewAdminUserPhoto(this)">
+      </div>
+      <div class="fg"><label class="flabel">Nama</label><input type="text" class="finput" id="usr-nama" placeholder="Nama lengkap"></div>
+      <div class="fg"><label class="flabel">Email</label><input type="email" class="finput" id="usr-email" placeholder="email@example.com"></div>
+      <div class="fg"><label class="flabel">WhatsApp</label><input type="tel" class="finput" id="usr-wa" placeholder="08xxxxxxxxxx"></div>
+      <div class="fg"><label class="flabel">Tanggal Lahir</label><input type="date" class="finput" id="usr-birthday"></div>
+      <div class="fg"><label class="flabel">Alamat</label><input type="text" class="finput" id="usr-alamat" placeholder="Alamat tempat tinggal"></div>
+      <div class="fg">
+        <label class="flabel">Password <span style="color:var(--text-3);font-weight:400;" id="usr-pw-hint">(kosongkan jika tidak diubah)</span></label>
+        <div class="pw-wrap"><input type="password" class="finput" id="usr-password" placeholder="Password"><button class="pw-eye" onclick="togglePw('usr-password','usr-pw-eye')"><i class="fas fa-eye" id="usr-pw-eye"></i></button></div>
+      </div>
+      <div class="fg"><label class="flabel">Role</label>
+        <select class="finput" id="usr-role"><option value="member">Member</option><option value="admin">Admin</option></select>
+      </div>
+      <button class="btn-purple w-100" onclick="saveUser()" id="usr-save-btn"><i class="fas fa-save"></i> <span id="usr-save-text">Simpan Perubahan</span></button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ADMIN: ASSIGN FIRMAN -->
+<div class="modal fade" id="modalFirman" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="fas fa-microphone me-2" style="color:#9370AF;"></i>Tugaskan Share Firman</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="fm-id">
+      <div class="fg"><label class="flabel">Pilih Anggota</label>
+        <select class="finput" id="fm-member"></select>
+      </div>
+      <div class="fg"><label class="flabel">Tanggal Kegiatan</label><input type="date" class="finput" id="fm-tanggal"></div>
+      <div class="fg"><label class="flabel">Catatan (opsional)</label><textarea class="finput" id="fm-catatan" placeholder="Tema, topik, atau catatan tambahan..." style="min-height:80px;"></textarea></div>
+      <button class="btn-purple w-100" onclick="saveFirman()"><i class="fas fa-paper-plane"></i> Tugaskan & Kirim Notifikasi</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- MEMBER: FIRMAN RESPONSE -->
+<div class="modal fade" id="modalFirmanResp" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="fas fa-microphone me-2" style="color:#9370AF;"></i>Konfirmasi Tugas Firman</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" id="firman-resp-body"></div>
+    <div class="modal-footer">
+      <button class="btn-p" onclick="respondFirman('accepted')"><i class="fas fa-check"></i> Bersedia</button>
+      <button class="btn-d" onclick="respondFirman('declined')"><i class="fas fa-times"></i> Tidak Bersedia</button>
+    </div>
+  </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "I Care True",
+  "short_name": "I Care",
+  "description": "Pusat Informasi Komunitas Rohani Kristen",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#6B8E6B",
+  "background_color": "#F7F3E9",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "social"],
+  "lang": "id"
+}
