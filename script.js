@@ -174,7 +174,7 @@ function checkEventReminders() {
     if (!S.data.events.length) return;
     const now = new Date();
     S.data.events.forEach(ev => {
-        const evDate = new Date(`${ev.tanggal}T${(ev.jam||'00:00')}:00`);
+        const evDate = new Date(`${String(ev.tanggal).split('T')[0]}T${String(ev.jam||'00:00').substring(0,5)}:00`);
         const diffMs = evDate - now;
         if (diffMs <= 0) return;
         const hours = diffMs / 3600000;
@@ -602,7 +602,7 @@ function startCountdown(events) {
     if(S.countdown)clearInterval(S.countdown);
     if(!events?.length)return;
     const now=new Date();
-    const upcoming=events.map(e=>({...e,date:new Date(`${e.tanggal}T${e.jam||'00:00'}:00`)})).filter(e=>e.date>now).sort((a,b)=>a.date-b.date);
+    const upcoming=events.map(e=>{const ds=String(e.tanggal).split('T')[0];const jam=String(e.jam||'00:00').substring(0,5);return{...e,date:new Date(`${ds}T${jam}:00`)};}).filter(e=>!isNaN(e.date)&&e.date>now).sort((a,b)=>a.date-b.date);
     if(!upcoming.length){document.getElementById('cd-event').textContent='Tidak ada jadwal mendatang';return;}
     const next=upcoming[0];
     document.getElementById('cd-event').textContent=next.nama_kegiatan;
@@ -757,7 +757,7 @@ function loadProfile() {
     const c=document.getElementById('profile-container');
     if(!S.user){c.innerHTML=`<div class="auth-msg"><i class="fas fa-user-lock"></i><p style="margin-bottom:16px;">Silakan masuk untuk melihat profil</p><button class="btn-p" onclick="showAuth('login')"><i class="fas fa-sign-in-alt"></i> Masuk</button></div>`;return;}
     const init=S.user.nama.split(' ').map(w=>w[0]).join('').toUpperCase().substring(0,2);
-    const avatarHtml=S.user.foto?`<img src="${S.user.foto}" id="profile-avatar-img" style="width:88px;height:88px;border-radius:50%;object-fit:cover;" onerror="this.parentNode.querySelector('.p-avatar-ph')&&(this.style.display='none')">`:`<div class="p-avatar">${init}</div>`;
+    const avatarHtml=S.user.foto?`<img src="${S.user.foto}" id="profile-avatar-img" style="width:88px;height:88px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div class=\\'p-avatar\\'>${init}</div>'">`:`<div class="p-avatar">${init}</div>`;
     c.innerHTML=`<div class="row g-4"><div class="col-12 col-md-5"><div class="profile-card">${avatarHtml}<div style="margin-bottom:10px;"><label for="profile-foto-input" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--primary);font-weight:600;padding:4px 10px;border:1px solid var(--primary);border-radius:8px;"><i class="fas fa-camera"></i> Ubah Foto</label><input type="file" id="profile-foto-input" accept="image/png,image/jpeg" style="display:none;" onchange="changeProfilePhoto(this)"></div><div class="p-name">${S.user.nama}</div><div class="p-email">${S.user.email}</div><div class="p-badge"><i class="fas fa-check-circle me-1"></i>Anggota Aktif</div><div style="text-align:left;"><div class="p-info-item"><i class="fas fa-user"></i><span>${S.user.nama}</span></div><div class="p-info-item"><i class="fas fa-envelope"></i><span>${S.user.email}</span></div><div class="p-info-item"><i class="fab fa-whatsapp"></i><a href="https://wa.me/${S.user.wa}" target="_blank" style="color:var(--primary);">${S.user.wa||'-'}</a></div>${S.user.birthday?`<div class="p-info-item"><i class="fas fa-birthday-cake"></i><span>${formatDateShort(S.user.birthday)}</span></div>`:''}<div class="p-info-item"><i class="fas fa-map-marker-alt"></i><span>${S.user.alamat||'-'}</span></div><div class="p-info-item"><i class="fas fa-shield-alt"></i><span style="text-transform:capitalize;">${S.user.role||'member'}</span></div></div><div style="margin-top:20px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;"><button class="btn-d" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button></div></div></div><div class="col-12 col-md-7"><div class="card" style="text-align:center;"><div class="card-hdr" style="justify-content:center;"><div class="card-ico ci-green"><i class="fas fa-qrcode"></i></div><div><div class="card-label">QR Member Card</div><div class="card-sublabel">Scan untuk identifikasi anggota</div></div></div><div style="display:flex;justify-content:center;margin-bottom:16px;"><div class="qr-wrap"><div id="qr-code"></div></div></div><div style="font-size:12.5px;color:var(--text-3);margin-bottom:16px;">Tunjukkan QR ini saat absensi kegiatan</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button class="btn-p" onclick="downloadQR()"><i class="fas fa-download"></i> Unduh QR</button><button class="btn-wa" onclick="shareProfileWA()"><i class="fab fa-whatsapp"></i> Bagikan</button></div></div></div></div>`;
     setTimeout(()=>generateQR(),100);
 }
@@ -1083,11 +1083,11 @@ function previewAdminUserPhoto(input) {
 
 function formatDate(ds) {
     if(!ds)return'-';
-    try{const d=new Date(ds+(ds.includes('T')?'':'T00:00:00'));return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});}catch(e){return ds;}
+    try{const dateOnly=String(ds).split('T')[0];const d=new Date(dateOnly+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});}catch(e){return String(ds);}
 }
 function formatDateShort(ds) {
     if(!ds)return'-';
-    try{const d=new Date(ds+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long'});}catch(e){return ds;}
+    try{const dateOnly=String(ds).split('T')[0];const d=new Date(dateOnly+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long'});}catch(e){return String(ds);}
 }
 function timeAgo(iso) {
     const diff=Date.now()-new Date(iso).getTime(),m=Math.floor(diff/60000),h=Math.floor(m/60),d=Math.floor(h/24);
