@@ -174,7 +174,7 @@ function checkEventReminders() {
     if (!S.data.events.length) return;
     const now = new Date();
     S.data.events.forEach(ev => {
-        const evDate = new Date(`${String(ev.tanggal).split('T')[0]}T${String(ev.jam||'00:00').substring(0,5)}:00`);
+        const evDate = new Date(`${String(ev.tanggal).split('T')[0]}T${toTimeStr(ev.jam)}:00`);
         const diffMs = evDate - now;
         if (diffMs <= 0) return;
         const hours = diffMs / 3600000;
@@ -182,11 +182,11 @@ function checkEventReminders() {
         const key1h = `ict_rem1h_${ev.id}`;
         if (hours <= 24 && hours > 1 && !localStorage.getItem(key1d)) {
             localStorage.setItem(key1d, '1');
-            NOTIF.add('📅 Pengingat H-1', `"${ev.nama_kegiatan}" besok, ${formatDate(ev.tanggal)} pukul ${ev.jam} di ${ev.lokasi}`, 'info');
+            NOTIF.add('📅 Pengingat H-1', `"${ev.nama_kegiatan}" besok, ${formatDate(ev.tanggal)} pukul ${toTimeStr(ev.jam)} di ${ev.lokasi}`, 'info');
         }
         if (hours <= 1 && hours > 0 && !localStorage.getItem(key1h)) {
             localStorage.setItem(key1h, '1');
-            NOTIF.add('🔔 1 Jam Lagi!', `"${ev.nama_kegiatan}" dimulai pukul ${ev.jam} di ${ev.lokasi}`, 'warning');
+            NOTIF.add('🔔 1 Jam Lagi!', `"${ev.nama_kegiatan}" dimulai pukul ${toTimeStr(ev.jam)} di ${ev.lokasi}`, 'warning');
         }
     });
 }
@@ -563,7 +563,7 @@ function renderDashEvents(events) {
         <div class="event-card mb-2" onclick="navigate('jadwal')">
             <div class="ev-badge"><i class="fas fa-calendar-day"></i> ${formatDate(ev.tanggal)}</div>
             <div class="ev-name">${ev.nama_kegiatan}</div>
-            <div class="ev-meta"><span><i class="fas fa-clock"></i> ${ev.jam}</span><span><i class="fas fa-map-marker-alt"></i> ${ev.lokasi}</span></div>
+            <div class="ev-meta"><span><i class="fas fa-clock"></i> ${toTimeStr(ev.jam)}</span><span><i class="fas fa-map-marker-alt"></i> ${ev.lokasi}</span></div>
         </div>`).join('');
 }
 function renderDashDevotions(devs) {
@@ -602,7 +602,7 @@ function startCountdown(events) {
     if(S.countdown)clearInterval(S.countdown);
     if(!events?.length)return;
     const now=new Date();
-    const upcoming=events.map(e=>{const ds=String(e.tanggal).split('T')[0];const jam=String(e.jam||'00:00').substring(0,5);return{...e,date:new Date(`${ds}T${jam}:00`)};}).filter(e=>!isNaN(e.date)&&e.date>now).sort((a,b)=>a.date-b.date);
+    const upcoming=events.map(e=>{const ds=String(e.tanggal).split('T')[0];const jam=toTimeStr(e.jam);return{...e,date:new Date(`${ds}T${jam}:00`)};}).filter(e=>!isNaN(e.date)&&e.date>now).sort((a,b)=>a.date-b.date);
     if(!upcoming.length){document.getElementById('cd-event').textContent='Tidak ada jadwal mendatang';return;}
     const next=upcoming[0];
     document.getElementById('cd-event').textContent=next.nama_kegiatan;
@@ -626,15 +626,15 @@ function renderEvents(events) {
     const c=document.getElementById('events-container');
     if(!events?.length){c.innerHTML=`<div class="col-12"><div class="empty"><i class="fas fa-calendar-times"></i><p>Belum ada jadwal</p></div></div>`;return;}
     if(S.eventView==='card'){
-        c.innerHTML=events.map((ev,i)=>`<div class="col-12 col-md-6 col-lg-4"><div class="event-card reveal" style="transition-delay:${i*.05}s;"><div class="ev-badge"><i class="fas fa-calendar-day"></i> ${formatDate(ev.tanggal)}</div><div class="ev-name">${ev.nama_kegiatan}</div><div class="ev-meta"><span><i class="fas fa-clock"></i> ${ev.jam}</span><span><i class="fas fa-map-marker-alt"></i> ${ev.lokasi}</span>${ev.pic?`<span><i class="fas fa-user"></i> ${ev.pic}</span>`:''}</div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-wa" style="font-size:12px;padding:6px 12px;" onclick="shareEventWA(${i})"><i class="fab fa-whatsapp"></i> Share</button>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn"><i class="fas ${fileIcon(ev.file_name||'')} me-1"></i>Unduh</a>`:''}</div></div></div>`).join('');
+        c.innerHTML=events.map((ev,i)=>`<div class="col-12 col-md-6 col-lg-4"><div class="event-card reveal" style="transition-delay:${i*.05}s;"><div class="ev-badge"><i class="fas fa-calendar-day"></i> ${formatDate(ev.tanggal)}</div><div class="ev-name">${ev.nama_kegiatan}</div><div class="ev-meta"><span><i class="fas fa-clock"></i> ${toTimeStr(ev.jam)}</span><span><i class="fas fa-map-marker-alt"></i> ${ev.lokasi}</span>${ev.pic?`<span><i class="fas fa-user"></i> ${ev.pic}</span>`:''}</div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn-wa" style="font-size:12px;padding:6px 12px;" onclick="shareEventWA(${i})"><i class="fab fa-whatsapp"></i> Share</button>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn"><i class="fas ${fileIcon(ev.file_name||'')} me-1"></i>Unduh</a>`:''}</div></div></div>`).join('');
     } else {
-        c.innerHTML=`<div class="col-12">${events.map((ev,i)=>`<div class="list-item reveal" style="transition-delay:${i*.04}s;"><div class="li-num">${i+1}</div><div style="flex:1;"><div style="font-weight:700;color:var(--text);font-size:14.5px;">${ev.nama_kegiatan}</div><div style="font-size:12.5px;color:var(--text-3);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;"><span><i class="fas fa-calendar me-1"></i>${formatDate(ev.tanggal)}</span><span><i class="fas fa-clock me-1"></i>${ev.jam}</span><span><i class="fas fa-map-pin me-1"></i>${ev.lokasi}</span>${ev.pic?`<span><i class="fas fa-user me-1"></i>${ev.pic}</span>`:''}</div></div><div style="display:flex;gap:6px;"><button class="btn-wa" style="font-size:12px;padding:6px 12px;" onclick="shareEventWA(${i})"><i class="fab fa-whatsapp"></i></button>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn" style="margin-top:0;"><i class="fas ${fileIcon(ev.file_name||'')}"></i></a>`:''}</div></div>`).join('')}</div>`;
+        c.innerHTML=`<div class="col-12">${events.map((ev,i)=>`<div class="list-item reveal" style="transition-delay:${i*.04}s;"><div class="li-num">${i+1}</div><div style="flex:1;"><div style="font-weight:700;color:var(--text);font-size:14.5px;">${ev.nama_kegiatan}</div><div style="font-size:12.5px;color:var(--text-3);margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;"><span><i class="fas fa-calendar me-1"></i>${formatDate(ev.tanggal)}</span><span><i class="fas fa-clock me-1"></i>${toTimeStr(ev.jam)}</span><span><i class="fas fa-map-pin me-1"></i>${ev.lokasi}</span>${ev.pic?`<span><i class="fas fa-user me-1"></i>${ev.pic}</span>`:''}</div></div><div style="display:flex;gap:6px;"><button class="btn-wa" style="font-size:12px;padding:6px 12px;" onclick="shareEventWA(${i})"><i class="fab fa-whatsapp"></i></button>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn" style="margin-top:0;"><i class="fas ${fileIcon(ev.file_name||'')}"></i></a>`:''}</div></div>`).join('')}</div>`;
     }
     setTimeout(observeReveal,50);
 }
 function setView(v){S.eventView=v;document.getElementById('vt-card').classList.toggle('active',v==='card');document.getElementById('vt-list').classList.toggle('active',v==='list');renderEvents(S.data.events);}
 function filterEvents(t){if(!t){renderEvents(S.data.events);return;}const q=t.toLowerCase();renderEvents(S.data.events.filter(e=>e.nama_kegiatan.toLowerCase().includes(q)||e.lokasi.toLowerCase().includes(q)||(e.pic&&e.pic.toLowerCase().includes(q))));}
-function shareEventWA(i){const ev=S.data.events[i];if(!ev)return;window.open(`https://wa.me/?text=${encodeURIComponent(`📅 *${ev.nama_kegiatan}*\n🗓️ ${formatDate(ev.tanggal)} | ⏰ ${ev.jam}\n📍 ${ev.lokasi}${ev.pic?`\n👤 PIC: ${ev.pic}`:''}\n\n_I Care True_`)}`, '_blank');}
+function shareEventWA(i){const ev=S.data.events[i];if(!ev)return;window.open(`https://wa.me/?text=${encodeURIComponent(`📅 *${ev.nama_kegiatan}*\n🗓️ ${formatDate(ev.tanggal)} | ⏰ ${toTimeStr(ev.jam)}\n📍 ${ev.lokasi}${ev.pic?`\n👤 PIC: ${ev.pic}`:''}\n\n_I Care True_`)}`, '_blank');}
 
 // ================================================================
 // DEVOTIONS
@@ -807,7 +807,7 @@ function adminTab(tab) {
 
 function renderAdminEvents() {
     const c=document.getElementById('admin-content');
-    c.innerHTML=`<div class="admin-section-hdr"><h5 style="font-weight:700;color:var(--text);margin:0;"><i class="fas fa-calendar-alt me-2" style="color:var(--primary);"></i>Kelola Kegiatan</h5><button class="btn-p" onclick="openEventModal()"><i class="fas fa-plus"></i> Tambah</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nama Kegiatan</th><th>Tanggal</th><th>Jam</th><th>Lokasi</th><th>PIC</th><th>Lampiran</th><th>Aksi</th></tr></thead><tbody>${S.data.events.map(ev=>`<tr><td><strong>${ev.nama_kegiatan}</strong></td><td>${formatDate(ev.tanggal)}</td><td>${ev.jam}</td><td>${ev.lokasi}</td><td>${ev.pic||'-'}</td><td>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn" style="margin-top:0;"><i class="fas ${fileIcon(ev.file_name||'')} me-1"></i>${(ev.file_name||'').substring(0,16)||'Lihat'}</a>`:'<span style="color:var(--text-3);font-size:12px;">—</span>'}</td><td><div class="tbl-actions"><button class="btn-e" onclick="openEventModal(${safeJson(ev)})"><i class="fas fa-edit"></i></button><button class="btn-d" onclick="adminDelete('event','${ev.id}','${escStr(ev.nama_kegiatan)}')"><i class="fas fa-trash"></i></button><button class="btn-wa" style="padding:7px 12px;font-size:12px;" onclick="shareEventWA(${S.data.events.indexOf(ev)})"><i class="fab fa-whatsapp"></i></button></div></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-3);">Belum ada data</td></tr>'}</tbody></table></div>`;
+    c.innerHTML=`<div class="admin-section-hdr"><h5 style="font-weight:700;color:var(--text);margin:0;"><i class="fas fa-calendar-alt me-2" style="color:var(--primary);"></i>Kelola Kegiatan</h5><button class="btn-p" onclick="openEventModal()"><i class="fas fa-plus"></i> Tambah</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nama Kegiatan</th><th>Tanggal</th><th>Jam</th><th>Lokasi</th><th>PIC</th><th>Lampiran</th><th>Aksi</th></tr></thead><tbody>${S.data.events.map(ev=>`<tr><td><strong>${ev.nama_kegiatan}</strong></td><td>${formatDate(ev.tanggal)}</td><td>${toTimeStr(ev.jam)}</td><td>${ev.lokasi}</td><td>${ev.pic||'-'}</td><td>${(ev.file_url&&ev.file_url!=='#demo')?`<a href="${ev.file_url}" target="_blank" class="file-download-btn" style="margin-top:0;"><i class="fas ${fileIcon(ev.file_name||'')} me-1"></i>${(ev.file_name||'').substring(0,16)||'Lihat'}</a>`:'<span style="color:var(--text-3);font-size:12px;">—</span>'}</td><td><div class="tbl-actions"><button class="btn-e" onclick="openEventModal(${safeJson(ev)})"><i class="fas fa-edit"></i></button><button class="btn-d" onclick="adminDelete('event','${ev.id}','${escStr(ev.nama_kegiatan)}')"><i class="fas fa-trash"></i></button><button class="btn-wa" style="padding:7px 12px;font-size:12px;" onclick="shareEventWA(${S.data.events.indexOf(ev)})"><i class="fab fa-whatsapp"></i></button></div></td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-3);">Belum ada data</td></tr>'}</tbody></table></div>`;
 }
 function renderAdminDevotions() {
     const c=document.getElementById('admin-content');
@@ -835,8 +835,8 @@ function renderAdminFirman() {
 function openEventModal(ev=null) {
     document.getElementById('ev-id').value=ev?.id||'';
     document.getElementById('ev-nama').value=ev?.nama_kegiatan||'';
-    document.getElementById('ev-tanggal').value=ev?.tanggal||'';
-    document.getElementById('ev-jam').value=ev?.jam||'';
+    document.getElementById('ev-tanggal').value=ev?.tanggal?String(ev.tanggal).split('T')[0]:'';
+    document.getElementById('ev-jam').value=ev?.jam?toTimeStr(ev.jam):'';
     document.getElementById('ev-lokasi').value=ev?.lokasi||'';
     document.getElementById('ev-pic').value=ev?.pic||'';
     document.getElementById('ev-file-url').value=ev?.file_url||'';
@@ -1015,7 +1015,7 @@ function getItemDetails(s,it){return{jadwal:[`📅 ${formatDate(it.tanggal)} | �
 function shareWhatsApp(){
     const ev=S.data.events[0];
     let text=`🙏 *I Care True*\nPusat Informasi Komunitas Rohani Kristen\n\n`;
-    if(ev)text+=`📅 Kegiatan terdekat: *${ev.nama_kegiatan}*\n🗓️ ${formatDate(ev.tanggal)} | ⏰ ${ev.jam}\n📍 ${ev.lokasi}\n\n`;
+    if(ev)text+=`📅 Kegiatan terdekat: *${ev.nama_kegiatan}*\n🗓️ ${formatDate(ev.tanggal)} | ⏰ ${toTimeStr(ev.jam)}\n📍 ${ev.lokasi}\n\n`;
     text+=`Bergabunglah bersama kami! 💚`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
@@ -1081,6 +1081,12 @@ function previewAdminUserPhoto(input) {
     prev.innerHTML = `<img src="${url}" class="photo-preview" alt="preview">`;
 }
 
+function toTimeStr(v) {
+    if(!v)return'00:00';
+    const s=String(v);
+    if(s.includes('T')){const d=new Date(s);if(!isNaN(d))return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');return s.split('T')[1].substring(0,5);}
+    return s.substring(0,5);
+}
 function formatDate(ds) {
     if(!ds)return'-';
     try{const dateOnly=String(ds).split('T')[0];const d=new Date(dateOnly+'T00:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});}catch(e){return String(ds);}
